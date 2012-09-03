@@ -28,18 +28,24 @@
 package net.hellonico.dropbox;
 
 import java.awt.Desktop;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
 import processing.core.PApplet;
+import processing.core.PImage;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.DropboxFileInfo;
@@ -136,6 +142,22 @@ public class PDropboxLibrary {
 			FileInputStream inputStream = new FileInputStream(file);
 			Entry newEntry = client.putFile(new File(local).getName(), inputStream, file.length(),
 					null, null);
+			return newEntry;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public Entry store(String name, PImage p) {
+		try {
+			BufferedImage image = (BufferedImage) p.getImage();
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			String extension = name.substring(name.lastIndexOf(".") + 1);
+			System.out.println("Using extension:"+extension);
+			ImageIO.write(image, extension, os);
+			byte[] byteArray = os.toByteArray();
+			InputStream is = new ByteArrayInputStream(byteArray);
+			Entry newEntry = client.putFile(name, is, byteArray.length, null, null);
 			return newEntry;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
